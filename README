@@ -1,0 +1,3 @@
+Contains (potentially) useful extensions to Psychoobox, that are not general
+enough to fit in that package. Any package using this also requires Psychoobox
+on the path (and Psychtoolbox!).
