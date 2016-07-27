@@ -42,8 +42,8 @@ classdef BlamKeyboard < PsychHandle
             delete(self);
         end
 
-        function [press_keycodes, press_times, press_names, press_index, ...
-                  release_keycodes, release_times, release_names, release_index] = Check(self)
+        function [press_times, press_names, press_array, ...
+                  release_times, release_names, release_array] = Check(self)
         % Newer presses are pushed on the front, e.g.
         % the press at index 2 happened before the press at index 1
             [~, pressed, released] = KbQueueCheck;
@@ -52,12 +52,12 @@ classdef BlamKeyboard < PsychHandle
                 press_keycodes = find(pressed > 0);
                 press_names = KbName(press_keycodes);
                 press_times = pressed(pressed > 0);
-                press_index = find(self.valid_keycodes == press_keycodes);
+                press_array = ismember(self.valid_keycodes, press_keycodes);
             else % no new presses
                 press_keycodes = nan;
                 press_times = nan;
                 press_names = nan;
-                press_index = nan;
+                press_array = nan;
             end
 
             if any(released > 0)
@@ -65,12 +65,12 @@ classdef BlamKeyboard < PsychHandle
                 release_keycodes = find(released > 0);
                 release_names = KbName(release_keycodes);
                 release_times = released(released > 0);
-                release_index = find(release_keycodes, self.valid_keycodes);
+                release_array = ismember(self.valid_keycodes, release_keycodes);
             else % no new releasees
                 release_keycodes = nan;
                 release_times = nan;
                 release_names = nan;
-                release_index = nan;
+                release_array = nan;
             end
 
         end % end CheckKeyResponse
