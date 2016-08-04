@@ -12,7 +12,7 @@ function out = GenBeep(beep_freq)
     rampup = linspace(0, 1, 0.1 * length(beep));
     rampdown = fliplr(rampup);
 
-    beep(1:length(rampup)) = beep(1:length(rampup)) .* ramp;
+    beep(1:length(rampup)) = beep(1:length(rampup)) .* rampup;
     beep(end - length(rampdown) + 1:end) = beep(end - length(rampdown) + 1:end) .* rampdown;
 
     out = beep;
