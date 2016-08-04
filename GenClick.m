@@ -22,8 +22,8 @@ function out = GenClick(click_freq, inter_click_interval, num_clicks)
 
 
     out = zeros(1, Fs*0.5 - (length(beep)/2));
-
-    for ii = 1:num_clicks
-        out = [out, beep, space];
+    out = [out, beep];
+    for ii = 1:(num_clicks - 1)
+        out = [out, space, beep];
     end
 end

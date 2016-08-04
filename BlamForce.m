@@ -32,7 +32,7 @@ classdef BlamForce < PsychHandle
                                  17.344 17.930 18.987 16.750 17.792];
 
             self.volt_2_newts = self.volt_2_newts(valid_indices);
-            
+
             temp_pos = [0 8 1 9 2 10 3 11 4 12]; % setup for nidaq
             valid_channels = temp_pos(valid_indices);
             device_name = daq.getDevices.ID;
@@ -44,7 +44,7 @@ classdef BlamForce < PsychHandle
             % append incoming data to new data, which is unloaded each cycle
             self.temp_data = nan(1000, 2 + length(valid_channels));
 
-            session.dothis = @(src, event) data_writer(event.TimeStamp, event.Data, ft.temp_data);
+            session.dothis = @(src, event) data_writer(event.TimeStamp, event.Data, src.temp_data);
             session.listener = addlistener(session, 'DataAvailable', session.dothis);
             self.session = session;
         end
