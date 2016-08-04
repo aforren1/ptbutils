@@ -12,7 +12,7 @@ function out = GenClick(click_freq, inter_click_interval, num_clicks)
 %     inter_click_interval - Period of click train (in seconds)
 %     num_clicks - Number of clicks in the train (3 or 4, usually...)
     Fs = 44100;
-    click_dur = 0.05;
+    click_dur = 0.04;
     beep = MakeBeep(click_freq, click_dur, Fs);
     space = zeros(1, (inter_click_interval * Fs) - length(beep));
     ramp = linspace(0, 1, .1*length(beep));
