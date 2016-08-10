@@ -1,3 +1,6 @@
+    cd('~/Documents/BLAM')
+    addpath(genpath('Psychoobox'));
+    addpath(genpath('ptbutils'));
     Screen('Preference', 'Verbosity', 1);
     scrn = PsychWindow(0, true,...
                        'color', [0 0 0],...
@@ -22,7 +25,6 @@
         end
         if ~isnan(releases)
             kf.SetFill(find(releases), 'black');
-        end
         kf.Draw(scrn.pointer);
         reftime = scrn.Flip(reftime + 0.5 * scrn.flip_interval);
     end
