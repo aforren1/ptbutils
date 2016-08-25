@@ -1,4 +1,4 @@
-classdef BlamForce < PsychHandle
+classdef BlamForce < handle
     properties
         session
         force_min
@@ -8,6 +8,7 @@ classdef BlamForce < PsychHandle
         listener
         volt_2_newts
         temp_data
+        p
     end
 
     methods

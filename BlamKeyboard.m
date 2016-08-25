@@ -1,4 +1,4 @@
-classdef BlamKeyboard < PsychHandle
+classdef BlamKeyboard < handle
     properties
         valid_indices;
         valid_keys;
