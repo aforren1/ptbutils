@@ -1,4 +1,4 @@
-classdef BlamKeyFeedback < Rectangle & Rainbow
+classdef BlamKeyFeedback < PobRectangle & Rainbow
 
     properties
         num_indices;
@@ -10,16 +10,18 @@ classdef BlamKeyFeedback < Rectangle & Rainbow
         function self = BlamKeyFeedback(num_indices, varargin)
         % call: self = BlamKeyFeedback(6, 'fill_color', [0 0 0], ...
         %                              'frame_color', [255 255 255], 'rel_x_scale', 0.1);
-            varargin{length(varargin) + 1} = 'rel_x_pos';
-            varargin{length(varargin) + 1} = linspace(.12, .88, num_indices);
-            varargin{length(varargin) + 1} = 'rel_y_pos';
-            varargin{length(varargin) + 1} = repmat(.9, 1, num_indices);
+            self = self@PobRectangle();
 
-            self = self@Rectangle(varargin{:});
-            self.fill_color = repmat(self.fill_color', 1, num_indices);
-            self.frame_color = repmat(self.frame_color', 1, num_indices);
-            self.default_fill = self.fill_color;
-            self.default_frame = self.frame_color;
+            self.p.parse(varargin{:});
+            opts = self.p.Results;
+            self.Add(1:num_indices, 'rel_x_pos', linspace(.12, .88, num_indices), ...
+                     'rel_y_pos', repmat(0.9, 1, num_indices), ...
+                     'frame_color', repmat(opts.frame_color', 1, num_indices), ...
+                     'fill_color', repmat(opts.fill_color', 1, num_indices),...
+                     'rel_x_scale', repmat(opts.rel_x_scale, 1, num_indices), ...
+                     'rel_y_scale', repmat(opts.rel_y_scale, 1, num_indices));
+            self.default_fill = opts.fill_color;
+            self.default_frame = opts.frame_color;
             self.num_indices = num_indices;
         end
 

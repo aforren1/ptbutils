@@ -44,8 +44,9 @@ classdef BlamKeyboard < handle
 
         function [press_times, press_names, press_array, ...
                   release_times, release_names, release_array] = Check(self)
-        % Newer presses are pushed on the front, e.g.
-        % the press at index 2 happened before the press at index 1
+        % [press_times, press_names, press_array, ...
+        %  release_times, release_names, release_array] ...
+        %  = kbrd.Check;
             [~, pressed, released] = KbQueueCheck;
             if any(pressed > 0)
                 % pressed returns a 1x256 vector. Non-zero values represent presses
@@ -54,7 +55,6 @@ classdef BlamKeyboard < handle
                 press_times = pressed(pressed > 0);
                 press_array = ismember(self.valid_keycodes, press_keycodes);
             else % no new presses
-                press_keycodes = nan;
                 press_times = nan;
                 press_names = nan;
                 press_array = nan;
@@ -67,7 +67,6 @@ classdef BlamKeyboard < handle
                 release_times = released(released > 0);
                 release_array = ismember(self.valid_keycodes, release_keycodes);
             else % no new releasees
-                release_keycodes = nan;
                 release_times = nan;
                 release_names = nan;
                 release_array = nan;
