@@ -1,74 +1,89 @@
-classdef BlamForceboard < PsychHandle
+classdef BlamForceboard < handle
     properties
-        valid_indices;
-        zero_baseline; % from the countdown file
-        force_min; % in newtons
-        force_max;
-        volt_2_newts;
-        daq;
-        p;
+        valid_indices
+        p % input parser
+        data % holds callback data
+        data_lag
+        long_term
+        dev
+        session
+        listener
+        possible_indices
+        volts_2_newts
+        threshold
+
     end
 
     methods
         function self = BlamForceboard(valid_indices, varargin)
-            if ~ispc
-                error('DAQ only works on Windows (barring new hardware)');
-            end
-            self.p = inputParser;
-            self.p.FunctionName = 'BlamForceboard';
-            self.p.addRequired('valid_indices');
-            self.p.addParamValue('force_min', 1, @(x) isnumeric(x));
-            self.p.addParamValue('force_max', 5, @(x) isnumeric(x));
-            self.p.parse(valid_indices, varargin{:});
+            self.valid_indices = valid_indices;
+            self.possible_indices = [0 8 1 9 2 10 3 11 4 12];
+            self.data = [];
+            self.data_lag = [];
+            self.long_term = [];
+            dev = daq.getDevices(1).ID;
+            session = daq.createSession('ni');
+            session.addAnalogInputChannel(dev, self.possible_indices(valid_indices), 'Voltage');
+            session.Rate = 250;
+            session.IsContinuous = true;
+            listener = session.addlistener('DataAvailable', ...
+                                           @(src, event) ...
+                                            BlamForceboard.getdat(src, event, self));
+            self.dev = dev;
+            self.session = session;
+            self.listener = listener;
 
+            self.volts_2_newts = [16.991 19.261 17.311 20.368 20.168...
+                                  17.344 17.930 18.987 16.750 17.792];
 
-            daqreset;
-            daqs = daqhwinfo('nidaq');
-            daq_ids = daqs.InstalledBoardIds;
-
-            if length(daq_ids) >= 1
-                daq_id = daq_ids{1};
-            else
-                error('No NI-DAQ device available.');
-            end
-
-            self.daq = analoginput('nidaq', daq_id);
-            self.daq.inputType = 'SingleEnded';
-
-            temp_pos = [0 8 1 9 2 10 3 11 4 12]; % setup for nidaq
-            valid_channels = temp_pos(valid_indices);
-            addchannel(self.daq, valid_channels);
-            dev.valid_indices = valid_indices;
-
-            set(self.daq, 'SampleRate', 200);
-            set(self.daq, 'SamplesPerTrigger', 4000);
-            set(self.daq, 'TriggerType', 'Manual');
-            set(self.daq, 'BufferingMode', 'Manual');
-            set(self.daq, 'BufferingConfig', [2 2000]);
-
-            self.volt_2_newts = [16.991 19.261 17.311 20.368 20.168...
-                                 17.344 17.930 18.987 16.750 17.792];
-
-            self.volt_2_newts = self.volt_2_newts(valid_indices);
+            self.volts_2_newts = self.volts_2_newts(valid_indices);
+            self.threshold = 0.3;
         end
 
         function Start(self)
-            stop(self.daq);
-            start(self.daq);
-            trigger(self.daq);
+            self.session.startBackground;
         end
 
         function Stop(self)
-            stop(self.daq);
+            stop(self.session);
         end
 
         function Close(self)
-            delete(self.daq);
+            stop(self.session);
+            delete(self.listener);
+            delete(self.session);
             delete(self);
         end
 
-        function [press_times, press_array, ptb_time] = Check(self)
+        function [press_times, press_array, release_times, release_array] = Check(self)
+            tmp_lag = mean(self.data_lag(:, 3:end), 1);
+            tmp_cur = mean(self.data(:, 3:end), 1);
+            press_array = (tmp_cur > self.threshold && tmp_lag < self.threshold);
+            release_array = tmp_cur < self.threshold;
+            if any(press_array)
+                press_times = self.data(1, 1);
+            else
+                press_times = nan;
+                press_array = nan;
+            end
+
+            if any(release_array)
+                release_times = self.data(1, 1);
+            else
+                release_times = nan;
+                release_array = nan;
+            end
 
         end
 
+    end
+
+    methods(Static)
+        function getdat(src, event, self)
+            self.data_lag = self.data;
+            self.data = [repmat(GetSecs, length(event.TimeStamps), 1), ...
+                         event.TimeStamps, event.Data .* self.volts_2_newts];
+            self.long_term = [self.long_term; self.data];
+        end
+    end
 end

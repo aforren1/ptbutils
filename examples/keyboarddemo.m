@@ -20,7 +20,7 @@
     kbrd.Start;
 
     while endtime > GetSecs
-        [~, ~, presses, ~, ~, releases] = kbrd.Check;
+        [~, presses, ~, releases] = kbrd.Check;
         if ~isnan(presses)
             kf.SetFill(find(presses), 'green');
         end

@@ -1,9 +1,9 @@
 classdef BlamKeyboard < handle
     properties
-        valid_indices;
-        valid_keys;
-        valid_keycodes;
-        p;
+        valid_indices
+        valid_keys
+        valid_keycodes
+        p
     end
 
     methods
@@ -42,8 +42,7 @@ classdef BlamKeyboard < handle
             delete(self);
         end
 
-        function [press_times, press_names, press_array, ...
-                  release_times, release_names, release_array] = Check(self)
+        function [press_times, press_array, release_times, release_array] = Check(self)
         % [press_times, press_names, press_array, ...
         %  release_times, release_names, release_array] ...
         %  = kbrd.Check;
@@ -51,24 +50,20 @@ classdef BlamKeyboard < handle
             if any(pressed > 0)
                 % pressed returns a 1x256 vector. Non-zero values represent presses
                 press_keycodes = find(pressed > 0);
-                press_names = KbName(press_keycodes);
                 press_times = pressed(pressed > 0);
                 press_array = ismember(self.valid_keycodes, press_keycodes);
             else % no new presses
                 press_times = nan;
-                press_names = nan;
                 press_array = nan;
             end
 
             if any(released > 0)
                 % released returns a 1x256 vector. Non-zero values represent releasees
                 release_keycodes = find(released > 0);
-                release_names = KbName(release_keycodes);
                 release_times = released(released > 0);
                 release_array = ismember(self.valid_keycodes, release_keycodes);
             else % no new releasees
                 release_times = nan;
-                release_names = nan;
                 release_array = nan;
             end
 
