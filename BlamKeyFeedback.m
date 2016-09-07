@@ -20,8 +20,8 @@ classdef BlamKeyFeedback < PobRectangle & Rainbow
                      'fill_color', repmat(opts.fill_color', 1, num_indices),...
                      'rel_x_scale', repmat(opts.rel_x_scale, 1, num_indices), ...
                      'rel_y_scale', repmat(opts.rel_y_scale, 1, num_indices));
-            self.default_fill = opts.fill_color;
-            self.default_frame = opts.frame_color;
+            self.default_fill = repmat(opts.fill_color', 1, num_indices);
+            self.default_frame = repmat(opts.frame_color', 1, num_indices);
             self.num_indices = num_indices;
         end
 
