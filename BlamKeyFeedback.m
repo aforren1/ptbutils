@@ -33,6 +33,10 @@ classdef BlamKeyFeedback < PobRectangle & Rainbow
             self.frame_color(:, index) = repmat(self.(color)', 1, length(index));
         end
 
+        function Draw(self)
+            Draw@PobRectangle(self, 1:self.num_indices);
+        end
+
         function Reset(self)
             self.frame_color = self.default_frame;
             self.fill_color = self.default_fill;
