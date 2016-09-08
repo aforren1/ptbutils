@@ -14,7 +14,7 @@
                          'rel_x_scale', 0.06);
     kf.Register(win.pointer);
     kf.Prime();
-    kf.Draw(1:l_keys);
+    kf.Draw();
     win.Flip();
     reftime = GetSecs;
     endtime = reftime + 6;
@@ -31,7 +31,7 @@
             kf.SetFill(find(releases), 'black');
         end
         kf.Prime();
-        kf.Draw(1:l_keys);
+        kf.Draw();
         reftime = win.Flip(reftime + 0.5 * win.flip_interval);
     end
     win.Close;

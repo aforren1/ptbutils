@@ -17,14 +17,20 @@ classdef BlamForceboard < handle
     methods
         function self = BlamForceboard(valid_indices, varargin)
             self.valid_indices = valid_indices;
-            self.possible_indices = [0 8 1 9 2 10 3 11 4 12];
+            self.possible_indices = [2 9 1 8 0 10 3 11 4 12];
             self.data = [];
             self.data_lag = [];
             self.long_term = [];
-            dev = daq.getDevices(1).ID;
+            tmp = daq.getDevices;
+            dev = tmp(1).ID;
             session = daq.createSession('ni');
-            session.addAnalogInputChannel(dev, self.possible_indices(valid_indices), 'Voltage');
-            session.Rate = 250;
+            session.addAnalogInputChannel(dev, self.possible_indices(valid_indices),...
+                                          'Voltage');
+            % lame hack to set all channels to single ended
+            for ii = 1:length(valid_indices)
+                session.Channels(ii).InputType = 'SingleEnded';
+            end
+            session.Rate = 200;
             session.IsContinuous = true;
             listener = session.addlistener('DataAvailable', ...
                                            @(src, event) ...
@@ -37,7 +43,8 @@ classdef BlamForceboard < handle
                                   17.344 17.930 18.987 16.750 17.792];
 
             self.volts_2_newts = self.volts_2_newts(valid_indices);
-            self.threshold = 0.3;
+            self.threshold = 1.2; % newtons
+            self.session.NotifyWhenDataAvailableExceeds = session.Rate * 0.05;
         end
 
         function Start(self)
@@ -56,10 +63,10 @@ classdef BlamForceboard < handle
         end
 
         function [press_times, press_array, release_times, release_array] = Check(self)
-            tmp_lag = mean(self.data_lag(:, 3:end), 1);
-            tmp_cur = mean(self.data(:, 3:end), 1);
-            press_array = (tmp_cur > self.threshold && tmp_lag < self.threshold);
-            release_array = tmp_cur < self.threshold;
+            tmp_lag = median(self.data_lag(:, 3:end));
+            tmp_cur = median(self.data(:, 3:end));
+            press_array = (tmp_cur > self.threshold);% & (tmp_lag < self.threshold);
+            release_array = (tmp_cur < self.threshold);% & (tmp_lag > self.threshold);
             if any(press_array)
                 press_times = self.data(1, 1);
             else
@@ -82,7 +89,7 @@ classdef BlamForceboard < handle
         function getdat(src, event, self)
             self.data_lag = self.data;
             self.data = [repmat(GetSecs, length(event.TimeStamps), 1), ...
-                         event.TimeStamps, event.Data .* self.volts_2_newts];
+                         event.TimeStamps, bsxfun(@times, event.Data, self.volts_2_newts)];
             self.long_term = [self.long_term; self.data];
         end
     end
