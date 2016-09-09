@@ -2,8 +2,7 @@ classdef BlamForceboard < handle
     properties
         valid_indices
         p % input parser
-        data % holds callback data
-        data_lag
+        short_term % holds callback data
         mid_term
         long_term
         dev
@@ -19,8 +18,8 @@ classdef BlamForceboard < handle
         function self = BlamForceboard(valid_indices, varargin)
             self.valid_indices = valid_indices;
             self.possible_indices = [2 9 1 8 0 10 3 11 4 12];
-            self.data = [];
-            self.data_lag = [];
+            self.short_term = [];
+            self.mid_term = [];
             self.long_term = [];
             tmp = daq.getDevices;
             dev = tmp(1).ID;
@@ -68,18 +67,18 @@ classdef BlamForceboard < handle
         end
 
         function [press_times, press_array, release_times, release_array] = Check(self)
-            tmp_cur = median(self.data(:, 3:end));
+            tmp_cur = median(self.short_term(:, 3:end));
             press_array = (tmp_cur > self.threshold);% & (tmp_lag < self.threshold);
             release_array = (tmp_cur < self.threshold);% & (tmp_lag > self.threshold);
             if any(press_array)
-                press_times = self.data(1, 1);
+                press_times = self.short_term(1, 1);
             else
                 press_times = nan;
                 press_array = nan;
             end
 
             if any(release_array)
-                release_times = self.data(1, 1);
+                release_times = self.short_term(1, 1);
             else
                 release_times = nan;
                 release_array = nan;
@@ -113,11 +112,10 @@ classdef BlamForceboard < handle
 
     methods(Static)
         function getdat(src, event, self)
-            self.data_lag = self.data;
-            self.data = [(GetSecs + (0:(1/self.session.Rate):((length(event.TimeStamps)-1)/self.session.Rate))).', ...
+            self.short_term = [(GetSecs + (0:(1/self.session.Rate):((length(event.TimeStamps)-1)/self.session.Rate))).', ...
                          event.TimeStamps, event.Data]; %bsxfun(@times, event.Data, self.volts_2_newts)];
-            self.mid_term = [self.mid_term; self.data];
-            self.long_term = [self.long_term; self.data];
+            self.mid_term = [self.mid_term; self.short_term];
+            self.long_term = [self.long_term; self.short_term];
         end
     end
 end
