@@ -4,6 +4,7 @@ classdef BlamForceboard < handle
         p % input parser
         data % holds callback data
         data_lag
+        mid_term
         long_term
         dev
         session
@@ -11,7 +12,7 @@ classdef BlamForceboard < handle
         possible_indices
         volts_2_newts
         threshold
-
+        velocity_threshold
     end
 
     methods
@@ -39,11 +40,15 @@ classdef BlamForceboard < handle
             self.session = session;
             self.listener = listener;
 
+            % recheck -- the ADC channels were switched around (2 & 4 I
+            % think?)
             self.volts_2_newts = [16.991 19.261 17.311 20.368 20.168...
                                   17.344 17.930 18.987 16.750 17.792];
 
             self.volts_2_newts = self.volts_2_newts(valid_indices);
-            self.threshold = 1.2; % newtons
+            %self.threshold = 1.2; % newtons
+            self.threshold = 0.1; % volts
+            self.velocity_threshold = 0.003; % volts
             self.session.NotifyWhenDataAvailableExceeds = session.Rate * 0.05;
         end
 
@@ -63,7 +68,6 @@ classdef BlamForceboard < handle
         end
 
         function [press_times, press_array, release_times, release_array] = Check(self)
-            tmp_lag = median(self.data_lag(:, 3:end));
             tmp_cur = median(self.data(:, 3:end));
             press_array = (tmp_cur > self.threshold);% & (tmp_lag < self.threshold);
             release_array = (tmp_cur < self.threshold);% & (tmp_lag > self.threshold);
@@ -80,7 +84,29 @@ classdef BlamForceboard < handle
                 release_times = nan;
                 release_array = nan;
             end
+        end
 
+        function [press1, t_press1, data] = CheckMid(self)
+        % retrieve all data for a chunk (e.g. for an entire state)
+        % and reset that storage
+        % call right at the beginning of a block (to clean up non-relevant input) and
+        % right at the end (to keep all trial-specific presses together)
+            out = zeros(1, size(self.mid_term, 2) - 2);
+            for ii = 3:size(self.mid_term, 2)
+                cands = find(medfilt1(diff(self.mid_term(:, ii)), 3) > 0.003);
+                if ~isempty(cands)
+                    out(ii - 2) = cands(1);
+                else
+                    out(ii - 2) = nan;
+                end
+            end
+
+            % need to do == because nans aren't included in indexing
+            press1 = find(min(out) == out);
+            t_press1 = self.mid_term(min(out), 1);
+            data = self.mid_term;
+            % reset the mid-term storage
+            self.mid_term = [];
         end
 
     end
@@ -88,8 +114,9 @@ classdef BlamForceboard < handle
     methods(Static)
         function getdat(src, event, self)
             self.data_lag = self.data;
-            self.data = [repmat(GetSecs, length(event.TimeStamps), 1), ...
-                         event.TimeStamps, bsxfun(@times, event.Data, self.volts_2_newts)];
+            self.data = [(GetSecs + (0:(1/self.session.Rate):((length(event.TimeStamps)-1)/self.session.Rate))).', ...
+                         event.TimeStamps, event.Data]; %bsxfun(@times, event.Data, self.volts_2_newts)];
+            self.mid_term = [self.mid_term; self.data];
             self.long_term = [self.long_term; self.data];
         end
     end
