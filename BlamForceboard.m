@@ -100,9 +100,14 @@ classdef BlamForceboard < handle
                 end
             end
 
-            % need to do == because nans aren't included in indexing
-            press1 = find(min(out) == out);
-            t_press1 = self.mid_term(min(out), 1);
+            if all(isnan(out))
+                press1 = nan;
+                t_press1 = nan;
+            else
+                % need to do == because nans aren't included in indexing
+                press1 = find(min(out) == out);
+                t_press1 = self.mid_term(min(out), 1);
+            end
             data = self.mid_term;
             % reset the mid-term storage
             self.mid_term = [];

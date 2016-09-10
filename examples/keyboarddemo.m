@@ -43,8 +43,8 @@ function [data, tmptime] = keyboarddemo
     end
     win.Close;
     kbrd.Stop;
-    data.current = kbrd.data;
-    data.last = kbrd.data_lag;
+    data.current = kbrd.short_term;
+    data.mid = kbrd.mid_term;
     data.long = kbrd.long_term;
     kbrd.Close;
     kf.Close;
