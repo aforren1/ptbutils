@@ -7,14 +7,14 @@ function [data, tmptime] = keyboarddemo
     ii = 1;
     tmptime = [];
 
-    win = PobWindow('screen', 0,...
+    win = PobWindow('screen', max(Screen('screens')),...
                     'color', [0 0 0],...
-                    'rect', [20 20 500 500]);
-    kbrd = BlamForceboard(6:10);
+                    'rect', []);
+    kbrd = BlamForceboard(1:5);
     l_keys = length(kbrd.valid_indices);
     kf = BlamKeyFeedback(l_keys, 'fill_color', [0 0 0], ...
                          'frame_color', [255 255 255], ...
-                         'rel_x_scale', 0.06);
+                         'rel_x_scale', 0.1);
     kf.Register(win.pointer);
     kf.Prime();
     kf.Draw();
@@ -23,7 +23,7 @@ function [data, tmptime] = keyboarddemo
     kbrd.session.prepare;
     kbrd.Start;
     reftime = GetSecs;
-    endtime = reftime + 3;
+    endtime = reftime + 5;
 
     while endtime > GetSecs
         [~, presses, ~, releases] = kbrd.Check;

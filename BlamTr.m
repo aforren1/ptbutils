@@ -15,6 +15,7 @@ classdef BlamTr < handle
            self.p.parse(varargin{:});
            
            opts = self.p.Results;
+           ListenChar(-1); % prevent printing to console
            self.keys = opts.keys{1};
            KbName('UnifyKeyNames');
            self.keycodes = KbName(self.keys);

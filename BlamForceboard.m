@@ -17,7 +17,7 @@ classdef BlamForceboard < handle
     methods
         function self = BlamForceboard(valid_indices, varargin)
             self.valid_indices = valid_indices;
-            self.possible_indices = [2 9 1 8 0 10 3 11 4 12];
+            self.possible_indices = [10 3 11 4 12]; %[2 9 1 8 0];
             self.short_term = [];
             self.mid_term = [];
             self.long_term = [];
@@ -46,8 +46,8 @@ classdef BlamForceboard < handle
 
             self.volts_2_newts = self.volts_2_newts(valid_indices);
             %self.threshold = 1.2; % newtons
-            self.threshold = 0.1; % volts
-            self.velocity_threshold = 0.003; % volts
+            self.threshold = 0.08; % volts
+            self.velocity_threshold = 0.004; % volts
             self.session.NotifyWhenDataAvailableExceeds = session.Rate * 0.05;
         end
 
@@ -71,6 +71,7 @@ classdef BlamForceboard < handle
             press_array = (tmp_cur > self.threshold);% & (tmp_lag < self.threshold);
             release_array = (tmp_cur < self.threshold);% & (tmp_lag > self.threshold);
             if any(press_array)
+                press_array = tmp_cur == max(tmp_cur);
                 press_times = self.short_term(1, 1);
             else
                 press_times = nan;
@@ -85,14 +86,17 @@ classdef BlamForceboard < handle
             end
         end
 
-        function [press1, t_press1, data] = CheckMid(self)
+        function [press1, t_press1, data, max_press, t_max_press] = CheckMid(self)
         % retrieve all data for a chunk (e.g. for an entire state)
         % and reset that storage
         % call right at the beginning of a block (to clean up non-relevant input) and
         % right at the end (to keep all trial-specific presses together)
-            out = zeros(1, size(self.mid_term, 2) - 2);
-            for ii = 3:size(self.mid_term, 2)
-                cands = find(medfilt1(diff(self.mid_term(:, ii)), 3) > 0.003);
+            data = self.mid_term;
+            % reset the mid-term storage
+            self.mid_term = [];
+            out = zeros(1, size(data, 2) - 2);
+            for ii = 3:size(data, 2)
+                cands = find(medfilt1(diff(data(:, ii)), 5) > self.velocity_threshold);
                 if ~isempty(cands)
                     out(ii - 2) = cands(1);
                 else
@@ -103,14 +107,16 @@ classdef BlamForceboard < handle
             if all(isnan(out))
                 press1 = nan;
                 t_press1 = nan;
+                max_press = nan;
+                t_max_press = nan;
             else
                 % need to do == because nans aren't included in indexing
                 press1 = find(min(out) == out);
-                t_press1 = self.mid_term(min(out), 1);
+                t_press1 = data(min(out), 1);
+                [max_press, index] = max(data(:, 2 + press1));
+                t_max_press = data(index, 1);
             end
-            data = self.mid_term;
-            % reset the mid-term storage
-            self.mid_term = [];
+
         end
 
     end
