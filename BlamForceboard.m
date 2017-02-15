@@ -17,7 +17,7 @@ classdef BlamForceboard < handle
     methods
         function self = BlamForceboard(valid_indices, varargin)
             self.valid_indices = valid_indices;
-            self.possible_indices = [10 3 11 4 12 2 9 1 8 0]; %[2 9 1 8 0];
+            self.possible_indices = [2 9 1 8 0 10 3 11 4 12]; %[2 9 1 8 0];
             self.short_term = [];
             self.mid_term = [];
             self.long_term = [];

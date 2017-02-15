@@ -9,12 +9,12 @@ function [data, tmptime] = keyboarddemo
 
     win = PobWindow('screen', max(Screen('screens')),...
                     'color', [0 0 0],...
-                    'rect', []);
-    kbrd = BlamForceboard(1:5);
+                    'rect', [0 0 1400 1200]);
+    kbrd = BlamForceboard(1:10);
     l_keys = length(kbrd.valid_indices);
     kf = BlamKeyFeedback(l_keys, 'fill_color', [0 0 0], ...
                          'frame_color', [255 255 255], ...
-                         'rel_x_scale', 0.1);
+                         'rel_x_scale', 0.06);
     kf.Register(win.pointer);
     kf.Prime();
     kf.Draw();
@@ -23,9 +23,10 @@ function [data, tmptime] = keyboarddemo
     kbrd.session.prepare;
     kbrd.Start;
     reftime = GetSecs;
-    endtime = reftime + 5;
+    ref2 = reftime;
+    endtime = GetSecs + 2;
 
-    while endtime > GetSecs
+    while GetSecs < endtime
         [~, presses, ~, releases] = kbrd.Check;
         if ~isnan(presses)
             kf.SetFill(find(presses), 'gray');
@@ -41,10 +42,14 @@ function [data, tmptime] = keyboarddemo
         ii = ii + 1;
         pause(1e-5);
     end
+    [p1, t_p1, dat, mx, t_mx] = kbrd.CheckMid;
+    disp(['First press: ', num2str(p1)]);
+    disp(['Time first press: ', num2str(t_p1 - ref2)]);
+    
     win.Close;
     kbrd.Stop;
     data.current = kbrd.short_term;
-    data.mid = kbrd.mid_term;
+    data.mid = dat;
     data.long = kbrd.long_term;
     kbrd.Close;
     kf.Close;
