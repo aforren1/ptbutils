@@ -10,7 +10,7 @@ function [data, tmptime] = keyboarddemo
     win = PobWindow('screen', max(Screen('screens')),...
                     'color', [0 0 0],...
                     'rect', [0 0 1400 1200]);
-    kbrd = BlamForceboard(1:10);
+    kbrd = BlamKeyboard(1:10);
     l_keys = length(kbrd.valid_indices);
     kf = BlamKeyFeedback(l_keys, 'fill_color', [0 0 0], ...
                          'frame_color', [255 255 255], ...
@@ -20,7 +20,6 @@ function [data, tmptime] = keyboarddemo
     kf.Draw();
     win.Flip();
 
-    kbrd.session.prepare;
     kbrd.Start;
     reftime = GetSecs;
     ref2 = reftime;
@@ -48,7 +47,7 @@ function [data, tmptime] = keyboarddemo
     
     win.Close;
     kbrd.Stop;
-    data.current = kbrd.short_term;
+    %data.current = kbrd.short_term;
     data.mid = dat;
     data.long = kbrd.long_term;
     kbrd.Close;

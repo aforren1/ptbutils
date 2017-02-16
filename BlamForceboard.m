@@ -49,6 +49,7 @@ classdef BlamForceboard < handle
             self.threshold = 0.08; % volts
             self.velocity_threshold = 0.004; % volts
             self.session.NotifyWhenDataAvailableExceeds = session.Rate * 0.05;
+            self.session.prepare;
         end
 
         function Start(self)

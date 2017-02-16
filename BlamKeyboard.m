@@ -4,6 +4,8 @@ classdef BlamKeyboard < handle
         valid_keys
         valid_keycodes
         p
+        mid_term
+        long_term
     end
 
     methods
@@ -23,6 +25,9 @@ classdef BlamKeyboard < handle
             keys = zeros(1, 256);
             keys(self.valid_keycodes) = 1;
             KbQueueCreate(-1, keys);
+
+            self.mid_term = [];
+            self.long_term = []; % unused
         end
 
         function Start(self)
@@ -52,6 +57,9 @@ classdef BlamKeyboard < handle
                 press_keycodes = find(pressed > 0);
                 press_times = pressed(pressed > 0);
                 press_array = ismember(self.valid_keycodes, press_keycodes);
+                remap_indices = arrayfun(@(x) find(self.valid_keycodes == x, 1), press_keycodes);
+                press_n_times = [remap_indices; press_times]';
+                self.mid_term = [self.mid_term; sortrows(press_n_times, 2)];
             else % no new presses
                 press_times = nan;
                 press_array = nan;
@@ -67,7 +75,21 @@ classdef BlamKeyboard < handle
                 release_array = nan;
             end
 
-        end % end CheckKeyResponse
+        end % end Check
+
+        function [press1, t_press1, data, max_press, t_max_press] = CheckMid(self)
+            max_press = nan;
+            t_max_press = nan;
+            data = self.mid_term;
+            if ~isempty(data)
+                press1 = data(1, 1);
+                t_press1 = data(1, 2);
+            else
+                press1 = nan;
+                t_press1 = nan;
+            end
+            self.mid_term = [];
+        end
 
     end % end methods
 end % end classdef
