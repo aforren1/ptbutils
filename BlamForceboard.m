@@ -12,6 +12,7 @@ classdef BlamForceboard < handle
         volts_2_newts
         threshold
         velocity_threshold
+        tmp_lag
     end
 
     methods
@@ -50,6 +51,7 @@ classdef BlamForceboard < handle
             self.velocity_threshold = 0.004; % volts
             self.session.NotifyWhenDataAvailableExceeds = session.Rate * 0.05;
             self.session.prepare;
+            self.tmp_lag = zeros(1, length(valid_indices));
         end
 
         function Start(self)
@@ -69,8 +71,9 @@ classdef BlamForceboard < handle
 
         function [press_times, press_array, release_times, release_array] = Check(self)
             tmp_cur = median(self.short_term(:, 3:end));
-            press_array = (tmp_cur > self.threshold);% & (tmp_lag < self.threshold);
-            release_array = (tmp_cur < self.threshold);% & (tmp_lag > self.threshold);
+            press_array = (tmp_cur > self.threshold) & (self.tmp_lag < self.threshold);
+            release_array = (tmp_cur < self.threshold) & (self.tmp_lag > self.threshold);
+            self.tmp_lag = tmp_cur;
             if any(press_array)
                 press_array = tmp_cur == max(tmp_cur);
                 press_times = self.short_term(1, 1);
