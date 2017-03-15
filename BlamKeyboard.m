@@ -79,11 +79,11 @@ classdef BlamKeyboard < handle
 
         function [press1, t_press1, data, max_press, t_max_press] = CheckMid(self)
             max_press = nan;
-            t_max_press = nan;
             data = self.mid_term;
             if ~isempty(data)
                 press1 = data(1, 1);
                 t_press1 = data(1, 2);
+                t_max_press = t_press1;
             else
                 press1 = nan;
                 t_press1 = nan;
