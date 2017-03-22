@@ -119,6 +119,13 @@ classdef BlamForceboard < handle
                 t_press1 = data(min(out), 1);
                 [max_press, index] = max(data(:, 2 + press1));
                 t_max_press = data(index, 1);
+				% hack to prevent multi-element first presses (and therefore crashes)
+				if length(press1) > 1
+				    press1 = nan;
+					t_press1 = nan;
+					max_press = nan;
+					t_max_press = nan;
+				end
             end
 
         end
