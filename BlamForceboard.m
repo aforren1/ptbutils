@@ -47,7 +47,7 @@ classdef BlamForceboard < handle
                                   17.9301218244265 18.9872094827267 16.7497447173567 ...
                                   17.7921183901903];
             %self.volts_to_newtons = self.volts_to_newtons(valid_indices);
-            self.threshold = 1.2; % newtons
+            self.threshold = 2; % newtons
             self.velocity_threshold = 0.06; % newtons
             %self.threshold = 0.08; % volts
             %self.velocity_threshold = 0.004; % volts
