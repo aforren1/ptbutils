@@ -1,7 +1,5 @@
 function [data, tmptime] = keyboarddemo
-%cd('~/Documents/BLAM')
-    addpath(genpath('Psychoobox'));
-    addpath(genpath('ptbutils'));
+
     Screen('Preference', 'Verbosity', 1);
     Screen('Preference', 'SkipSyncTests', 1);
     ii = 1;
@@ -23,7 +21,7 @@ function [data, tmptime] = keyboarddemo
     kbrd.Start;
     reftime = GetSecs;
     ref2 = reftime;
-    endtime = GetSecs + 2;
+    endtime = GetSecs + 5;
 
     while GetSecs < endtime
         [~, presses, ~, releases] = kbrd.Check;

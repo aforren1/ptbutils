@@ -9,7 +9,7 @@ classdef BlamForceboard < handle
         session
         listener
         possible_indices
-        volts_2_newts
+        volts_to_newtons
         threshold
         velocity_threshold
         tmp_lag
@@ -42,13 +42,15 @@ classdef BlamForceboard < handle
 
             % recheck -- the ADC channels were switched around (2 & 4 I
             % think?)
-            self.volts_2_newts = [16.991 19.261 17.311 20.368 20.168...
-                                  17.344 17.930 18.987 16.750 17.792];
-
-            self.volts_2_newts = self.volts_2_newts(valid_indices);
-            %self.threshold = 1.2; % newtons
-            self.threshold = 0.08; % volts
-            self.velocity_threshold = 0.004; % volts
+            self.volts_to_newtons = [18.2049152048295 19.2608319684787 17.3105298895872 ...
+                                  20.3675850551795 20.1679260919799 17.3444730115356 ...
+                                  17.9301218244265 18.9872094827267 16.7497447173567 ...
+                                  17.7921183901903];
+            %self.volts_to_newtons = self.volts_to_newtons(valid_indices);
+            self.threshold = 1.2; % newtons
+            self.velocity_threshold = 0.06; % newtons
+            %self.threshold = 0.08; % volts
+            %self.velocity_threshold = 0.004; % volts
             self.session.NotifyWhenDataAvailableExceeds = session.Rate * 0.05;
             self.session.prepare;
             self.tmp_lag = zeros(1, length(valid_indices));
@@ -117,6 +119,7 @@ classdef BlamForceboard < handle
                 % need to do == because nans aren't included in indexing
                 press1 = find(min(out) == out);
                 t_press1 = data(min(out), 1);
+                
                 [max_press, index] = max(data(:, 2 + press1));
                 t_max_press = data(index, 1);
 				% hack to prevent multi-element first presses (and therefore crashes)
@@ -136,7 +139,7 @@ classdef BlamForceboard < handle
         function getdat(src, event, self)
             % subtracting 50 ms gets us closer to the actual time of the event
             self.short_term = [(GetSecs + (0:(1/self.session.Rate):((length(event.TimeStamps)-1)/self.session.Rate))).' - 0.05, ...
-                         event.TimeStamps, event.Data]; %bsxfun(@times, event.Data, self.volts_2_newts)];
+                         event.TimeStamps, event.Data .* self.volts_to_newtons];
             self.mid_term = [self.mid_term; self.short_term];
             self.long_term = [self.long_term; self.short_term];
         end
