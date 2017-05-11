@@ -137,9 +137,9 @@ classdef BlamForceboard < handle
 
     methods(Static)
         function getdat(src, event, self)
-            % subtracting 50 ms gets us closer to the actual time of the event
+            % subtracting 50 ms gets us closer to the actual time of the event    
             self.short_term = [(GetSecs + (0:(1/self.session.Rate):((length(event.TimeStamps)-1)/self.session.Rate))).' - 0.05, ...
-                         event.TimeStamps, event.Data .* self.volts_to_newtons];
+                         event.TimeStamps, bsxfun(@times, event.Data, self.volts_to_newtons)];
             self.mid_term = [self.mid_term; self.short_term];
             self.long_term = [self.long_term; self.short_term];
         end

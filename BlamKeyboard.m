@@ -87,6 +87,7 @@ classdef BlamKeyboard < handle
             else
                 press1 = nan;
                 t_press1 = nan;
+                t_max_press = nan;
             end
             self.mid_term = [];
         end
